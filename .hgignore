@@ -1,0 +1,5 @@
+syntax: glob
+
+# buildout files and folders
+bin
+.installed.cfg
