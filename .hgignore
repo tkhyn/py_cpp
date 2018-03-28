@@ -6,3 +6,7 @@ bin
 
 # setup files and folders
 build
+
+# cpp build files
+cmake-build-debug
+cmake-build-release
