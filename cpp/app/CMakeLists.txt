@@ -15,3 +15,6 @@ conan_cmake_run(CONANFILE conanfile.txt
 
 # pybind11 configuration
 include(../pybind11.cmake)
+
+# post-build steps
+include(../postbuild.cmake)
