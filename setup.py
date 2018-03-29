@@ -38,6 +38,10 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
 
+    def initialize_options(self):
+        super(CMakeBuild, self).initialize_options()
+        self.package = CPP_DIR
+
     def run(self):
         try:
             out = subprocess.check_output(['cmake', '--version'])
