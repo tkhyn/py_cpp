@@ -3,6 +3,7 @@ import re
 import sys
 import platform
 import subprocess
+from glob import glob
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -107,8 +108,8 @@ setup(
         'Development Status :: %s' % DEV_STATUS[dev_status],
         'Environment :: Console'
     ],
-    ext_modules=[CMakeExtension(d, os.path.join(CPP_DIR, d))
-                 for d in os.listdir(CPP_DIR) if not d.startswith('.')],
+    ext_modules=[CMakeExtension(d.split(os.sep)[-2], d)
+                 for d in glob(os.path.join(CPP_DIR, "*", ""))],
     cmdclass=dict(build_ext=CMakeBuild),
     packages=find_packages(),
     install_requires=(),
