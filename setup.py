@@ -32,7 +32,7 @@ DEV_STATUS = {
 # from https://github.com/pybind/cmake_example
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
-        Extension.__init__(self, name, sources=[])
+        super(CMakeExtension, self).__init__(name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
 
@@ -103,7 +103,7 @@ setup(
         'Development Status :: %s' % DEV_STATUS[dev_status],
         'Environment :: Console'
     ],
-    ext_modules=[CMakeExtension(d, CPP_DIR)
+    ext_modules=[CMakeExtension(d, os.path.join(CPP_DIR, d))
                  for d in os.listdir(CPP_DIR) if not d.startswith('.')],
     cmdclass=dict(build_ext=CMakeBuild),
     packages=find_packages(),
