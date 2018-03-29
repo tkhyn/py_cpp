@@ -23,6 +23,7 @@ conan_cmake_run(
     CONANFILE conanfile.txt
     BASIC_SETUP
     BUILD missing
+    CONAN_COMMAND ../../../bin/conan
 )
 
 # pybind11 configuration
