@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include "main.h"
+#include "src/main.h"
 
 
 // The pybind11 definition
