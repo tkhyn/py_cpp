@@ -1,5 +1,9 @@
 # Default C++ module configuration, imported in every module's CMakeLists.txt
 
+# retrieve buildout bin directory
+get_filename_component(BUILDOUT_BIN_DIR ../../bin ABSOLUTE)
+
+
 # Set a default build configuration if none is specified. 'MinSizeRel' produces the smallest binaries
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'MinSizeRel' as none was specified.")
@@ -23,7 +27,7 @@ conan_cmake_run(
     CONANFILE conanfile.txt
     BASIC_SETUP
     BUILD missing
-    CONAN_COMMAND ../../../bin/conan
+    CONAN_COMMAND ${BUILDOUT_BIN_DIR}/conan
 )
 
 # pybind11 configuration

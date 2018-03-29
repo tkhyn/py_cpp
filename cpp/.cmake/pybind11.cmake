@@ -1,9 +1,6 @@
 # pybind11 module configuration, imported in every module's CMakeLists.txt
 # inspiration from https://github.com/memsharded/pybind11-example
 
-# this script is called from a sub-directory, hence the additional ../
-set(BUILDOUT_BIN_DIR ../../bin)
-
 
 include(CheckCXXCompilerFlag)
 
