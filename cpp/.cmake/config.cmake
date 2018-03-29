@@ -35,13 +35,23 @@ endif()
 # CMakeLists.txt file lies
 
 # run conan from cmake
-include(../.cmake/conan.cmake)
-conan_cmake_run(
-    CONANFILE conanfile.txt
-    BASIC_SETUP
-    BUILD missing
-    CONAN_COMMAND ${BUILDOUT_BIN_DIR}/conan
-)
+set(CONAN_BUILD_INFO_CMAKE "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+if(EXISTS ${CONAN_BUILD_INFO_CMAKE})
+    # standard conan installation, deps are defined in conanfile.txt
+    include(${CONAN_BUILD_INFO_CMAKE})
+    conan_basic_setup(
+        NO_OUTPUT_DIRS
+    )
+else() # in user space
+    include(../.cmake/conan.cmake)
+    conan_cmake_run(
+        CONANFILE conanfile.txt
+        BASIC_SETUP
+        BUILD missing
+        CONAN_COMMAND ${BUILDOUT_BIN_DIR}/conan
+        NO_OUTPUT_DIRS
+    )
+endif()
 
 # pybind11 configuration
 include(../.cmake/pybind11.cmake)
