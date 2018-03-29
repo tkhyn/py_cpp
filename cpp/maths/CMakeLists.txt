@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
-project(app)
+project(maths)
 
 # add all C++ files here
-set(CPP_FILES main.cpp)
+set(CPP_FILES
+        main.cpp
+        bindings.cpp
+)
 
 
 # run Cmake configuration
