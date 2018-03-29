@@ -10,4 +10,4 @@ build
 # cpp build files
 cmake-build-debug
 cmake-build-release
-cpp/.bin
+cpp/*.pyd
