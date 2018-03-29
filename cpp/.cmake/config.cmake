@@ -26,6 +26,10 @@ endif()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
+if(MSVC)
+    SET (CMAKE_MODULE_LINKER_FLAGS /MANIFEST:NO)
+endif()
+
 # when including files in the same directory we have to use ../.cmake
 # as the current working directory is the module's directory, where the
 # CMakeLists.txt file lies
