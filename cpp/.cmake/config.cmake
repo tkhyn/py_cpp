@@ -1,5 +1,12 @@
 # Default C++ module configuration, imported in every module's CMakeLists.txt
 
+# retrieve module directory name = project name
+get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+project(${MODULE_NAME})
+
+# this creates the __MODULE__ pre-processor definition used in bindings.cpp
+add_definitions(-D__MODULE__=${CMAKE_PROJECT_NAME})
+
 # retrieve buildout bin directory
 get_filename_component(BUILDOUT_BIN_DIR ../../bin ABSOLUTE)
 

@@ -6,7 +6,8 @@
 // The pybind11 definition
 namespace py = pybind11;
 
-PYBIND11_MODULE(maths, m) {
+// __MODULE__ is defined by CMake
+PYBIND11_MODULE(__MODULE__, m) {
     m.doc() = "math module";
     m.def("add", &add);
     m.def("sub", &sub);
