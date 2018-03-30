@@ -1,5 +1,6 @@
 [requires]
 pybind11/2.2.2@conan/stable
+Catch/1.9.6@bincrafters/stable
 
 [generators]
 cmake

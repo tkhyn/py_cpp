@@ -1,5 +1,9 @@
 # Default C++ module configuration, imported in every module's CMakeLists.txt
 
+set(SRC_DIR "src")
+set(TEST_DIR "tests")
+
+
 # retrieve module directory name = project name
 get_filename_component(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${MODULE_NAME})
@@ -10,8 +14,12 @@ add_definitions(-D__MODULE__=${CMAKE_PROJECT_NAME})
 # retrieve buildout bin directory
 get_filename_component(BUILDOUT_BIN_DIR ../../bin ABSOLUTE)
 
+# include source directory
+include_directories(${SRC_DIR})
 
-# Set a default build configuration if none is specified. 'MinSizeRel' produces the smallest binaries
+
+# Set a default build configuration if none is specified. 'MinSizeRel' produces
+# the smallest binaries
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'MinSizeRel' as none was specified.")
     set(CMAKE_BUILD_TYPE MinSizeRel CACHE STRING "Choose the type of build." FORCE)
@@ -27,7 +35,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 if(MSVC)
-    SET (CMAKE_MODULE_LINKER_FLAGS /MANIFEST:NO)
+    set(CMAKE_MODULE_LINKER_FLAGS /MANIFEST:NO)
 endif()
 
 # when including files in the same directory we have to use ../.cmake
@@ -42,7 +50,8 @@ if(EXISTS ${CONAN_BUILD_INFO_CMAKE})
     conan_basic_setup(
         NO_OUTPUT_DIRS
     )
-else() # in user space
+else()
+    # no conan build info found, run conan install
     include(../.cmake/conan.cmake)
     conan_cmake_run(
         CONANFILE conanfile.txt
@@ -55,3 +64,6 @@ endif()
 
 # pybind11 configuration
 include(../.cmake/pybind11.cmake)
+
+# tests configuration
+include(../.cmake/tests.cmake)

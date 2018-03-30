@@ -15,4 +15,7 @@ set(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.${PYTHON_VER
 message("-- Using Python ${PYTHON_VERSION}  libraries")
 
 # adding python module
-pybind11_add_module(${CMAKE_PROJECT_NAME} ${CPP_FILES})
+pybind11_add_module(${CMAKE_PROJECT_NAME}
+        ${CPP_FILES}
+        bindings.cpp
+)
