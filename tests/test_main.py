@@ -7,7 +7,7 @@ from io import StringIO
 import unittest
 from unittest.mock import patch
 
-from app import main
+from py_cpp import main
 
 
 class MainTest(unittest.TestCase):

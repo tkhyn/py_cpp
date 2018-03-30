@@ -10,12 +10,12 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
-APP_NAME = 'py_cpp'
+PKG_NAME = 'py_cpp'
 CPP_DIR = 'cpp'
 
 
-# imports versionning variables, avoiding to import the `app` module
-exec(open('app/version.py').read())
+# imports versioning variables without importing the package
+exec(open('${PKG_NAME}/version.py').read())
 
 dev_status = __version_info__[3]
 if dev_status == 'alpha' and not __version_info__[4]:
@@ -94,9 +94,9 @@ class CMakeBuild(build_ext):
                               cwd=self.build_temp)
 
 setup(
-    name=APP_NAME,
+    name=PKG_NAME,
     version=__version__,
-    description='Boilerplate Python app with C/C++ modules',
+    description='Boilerplate Python package with C/C++ modules',
     long_description=open(os.path.join('README.rst')).read(),
     author='Thomas Khyn',
     author_email='thomas@ksytek.com',
@@ -115,7 +115,7 @@ setup(
     install_requires=(),
     entry_points={
         'console_scripts': [
-            '%s = app.main:run' % APP_NAME
+            '%s = %s.main:run' % ((PKG_NAME,)*2)
         ],
     },
     zip_safe=False

@@ -1,5 +1,5 @@
 """
-Main app file
+Main module
 """
 
 from cpp import maths
