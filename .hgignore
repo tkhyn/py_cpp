@@ -13,3 +13,4 @@ cpp/*.pyd
 
 # python tests
 tests/.cache
+tests/.coverage
