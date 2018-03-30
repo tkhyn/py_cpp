@@ -10,3 +10,6 @@ build
 # cpp build files
 cmake-build-*
 cpp/*.pyd
+
+# python tests
+tests/.cache
