@@ -16,6 +16,6 @@ message("-- Using Python ${PYTHON_VERSION}  libraries")
 
 # adding python module
 pybind11_add_module(${CMAKE_PROJECT_NAME}
-        ${CPP_FILES}
+        ${SRC_FILES}
         bindings.cpp
 )

@@ -1,7 +1,8 @@
 # Default C++ module configuration, imported in every module's CMakeLists.txt
 
+# directories
 set(SRC_DIR "src")
-set(TEST_DIR "tests")
+set(TESTS_DIR "tests")
 
 
 # retrieve module directory name = project name
@@ -16,6 +17,9 @@ get_filename_component(BUILDOUT_BIN_DIR ../../bin ABSOLUTE)
 
 # include source directory
 include_directories(${SRC_DIR})
+
+# retrieves all C++ files
+file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ${SRC_DIR}/*.cpp)
 
 
 # Set a default build configuration if none is specified. 'MinSizeRel' produces
