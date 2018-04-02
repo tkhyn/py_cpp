@@ -14,3 +14,7 @@ cpp/*.pyd
 # python tests
 tests/.cache
 tests/.coverage
+
+# documentation
+doc/_build
+doc/code
