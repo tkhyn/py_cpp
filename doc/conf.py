@@ -32,10 +32,12 @@ project = package_name
 copyright = '2018, Thomas Khyn'
 author = 'Thomas Khyn'
 
-# The short X.Y version
-version = ''
-# The full version, including alpha/beta/rc tags
-release = ''
+from py_cpp import __version__
+
+# The short X.Y version.
+version = __version__[:3]
+# The full version, including alpha/beta/rc tags.
+release = version
 
 
 # -- General configuration ---------------------------------------------------
