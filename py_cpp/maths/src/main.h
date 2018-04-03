@@ -1,15 +1,15 @@
+/*!
+ * @file
+ * Math functions declarations
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 
-/*! Add two integers
-    \param i an integer
-    \param j another integer
-*/
-int add(int i, int j);
-/*! Subtract one integer from another
-    \param i an integer
-    \param j an integer to subtract from \p i
-*/
-int sub(int i, int j);
+/// Add two integers
+int add(int a, int b);
+
+/// Subtract one integer from another
+int sub(int a, int b);
 
 #endif
