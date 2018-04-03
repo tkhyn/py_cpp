@@ -118,6 +118,8 @@ class SphinxBuilder(Task):
                     pass
                 os.rename(f, dest)
 
+        os.chdir(doc_dir)
+
         # build html documentation
         build(['build', doc_dir, html_output])
 
