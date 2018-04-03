@@ -13,6 +13,11 @@ from distutils.version import LooseVersion
 # PACKAGE is the name of the python package (= its folder name)
 PACKAGE = 'py_cpp'
 
+# credentials
+AUTHOR = 'Thomas Khyn'
+AUTHOR_EMAIL = 'thomas@ksytek.com'
+URL = 'https://bitbucket.org/tkhyn/py_cpp/'
+
 
 # imports versioning variables without importing the package
 exec(open(os.path.join(PACKAGE, 'version.py')).read())
@@ -98,10 +103,10 @@ setup(
     version=__version__,
     description='Boilerplate Python package with C/C++ modules',
     long_description=open(os.path.join('README.rst')).read(),
-    author='Thomas Khyn',
-    author_email='thomas@ksytek.com',
-    url='https://bitbucket.org/tkhyn/py_cpp/',
-    keywords=['directory', 'folder', 'update', 'synchronisation'],
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    url=URL,
+    keywords=[],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
