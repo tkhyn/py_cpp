@@ -10,12 +10,12 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
-PKG_NAME = 'py_cpp'
-CPP_DIR = 'cpp'
+# PACKAGE is the name of the python package (= its folder name)
+PACKAGE = 'py_cpp'
 
 
 # imports versioning variables without importing the package
-exec(open('${PKG_NAME}/version.py').read())
+exec(open(os.path.join(PACKAGE, 'version.py')).read())
 
 dev_status = __version_info__[3]
 if dev_status == 'alpha' and not __version_info__[4]:
@@ -41,7 +41,7 @@ class CMakeBuild(build_ext):
 
     def initialize_options(self):
         super(CMakeBuild, self).initialize_options()
-        self.package = CPP_DIR
+        self.package = PACKAGE
 
     def run(self):
         try:
@@ -94,7 +94,7 @@ class CMakeBuild(build_ext):
                               cwd=self.build_temp)
 
 setup(
-    name=PKG_NAME,
+    name=PACKAGE,
     version=__version__,
     description='Boilerplate Python package with C/C++ modules',
     long_description=open(os.path.join('README.rst')).read(),
@@ -109,13 +109,14 @@ setup(
         'Environment :: Console'
     ],
     ext_modules=[CMakeExtension(d.split(os.sep)[-2], d)
-                 for d in glob(os.path.join(CPP_DIR, "*", ""))],
+                 for d in glob(os.path.join(PACKAGE, "*", ""))
+                 if os.path.isfile(os.path.join(d, 'CMakeLists.txt'))],
     cmdclass=dict(build_ext=CMakeBuild),
     packages=find_packages(),
     install_requires=(),
     entry_points={
         'console_scripts': [
-            '%s = %s.main:run' % ((PKG_NAME,)*2)
+            '%s = %s.main:run' % ((PACKAGE,)*2)
         ],
     },
     zip_safe=False

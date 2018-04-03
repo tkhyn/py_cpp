@@ -6,7 +6,7 @@
 
 
 import unittest
-from cpp import maths
+from py_cpp import maths
 
 
 class MathsTest(unittest.TestCase):

@@ -9,7 +9,7 @@ build
 
 # cpp build files
 cmake-build-*
-cpp/*.pyd
+*.pyd
 
 # python tests
 tests/.cache

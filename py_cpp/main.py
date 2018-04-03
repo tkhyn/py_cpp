@@ -2,7 +2,7 @@
 Main module
 """
 
-from cpp import maths
+from . import maths
 
 
 def run():

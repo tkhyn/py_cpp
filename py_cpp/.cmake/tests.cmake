@@ -3,8 +3,6 @@
 # retrieves all test C++ files
 file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false ${TESTS_DIR}/test_*.cpp)
 
-message(WARNING ${TEST_FILES})
-
 # Generate a test executable
 add_executable("${PROJECT_NAME}_test"
         ${SRC_FILES}
