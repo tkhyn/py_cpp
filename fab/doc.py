@@ -79,7 +79,8 @@ class SphinxBuilder(Task):
                             line = content[i]
                         continue
 
-                    if (root_pkg_name + '.') in line:
+                    if (root_pkg_name + '.') in line \
+                    and ('.. automodule:: ' + root_pkg_name) not in line:
                         content[i] = re.sub(
                             root_pkg_name + r'\.', '', line
                         )
