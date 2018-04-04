@@ -40,11 +40,11 @@ class SphinxBuilder(Task):
                 pass
             os.makedirs(apidoc_output)
 
-            build_apidoc(
-                ['--implicit-namespaces', '-o', apidoc_output, src_dir] +
-                [os.path.join(src_dir, os.path.normpath(p))
-                 for p in PY_EXCLUDE]
-            )
+            build_apidoc([
+                '--implicit-namespaces', '--separate', '--force',
+                '-o', apidoc_output, src_dir] + [
+                os.path.join(src_dir, os.path.normpath(p)) for p in PY_EXCLUDE
+            ])
 
             os.chdir(apidoc_output)
 
@@ -80,8 +80,6 @@ class SphinxBuilder(Task):
                                 if j < len(d) and d[j] == path[j]:
                                     continue
                                 new_path.append(path[j])
-                            if len(new_path) == 1:
-                                new_path[0:0] = ['/rst/code']
                             content[i] = '    %s\n' % '/'.join(new_path)
                             i += 1
                             line = content[i]
@@ -96,8 +94,15 @@ class SphinxBuilder(Task):
                         if ''.join(set(next_line[:-1])) in ('=', '-'):
                             content[i + 1] = next_line[-len(content[i]):]
 
+                    if f == 'modules.rst':
+                        if content[i] in ['Submodules', 'Subpackages']:
+                            content[i+1] = content[i+1].replace('-', '=')
+
                 if f == 'modules.rst':
-                    content = content[3:-9]
+                    # replace title and strip module contents for root package
+                    content[0] = 'Python\n'
+                    content[1] = content[1][0]*(len(content[0]) - 1) + '\n'
+                    content = content[:-8]
 
                 fh = open(f, 'w')
                 fh.write(''.join(content))
