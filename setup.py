@@ -42,11 +42,21 @@ class CMakeExtension(Extension):
         self.sourcedir = os.path.abspath(sourcedir)
 
 
-class CMakeBuild(build_ext):
+BUILD_TYPES = ('LIBRARY', 'RUNTIME')
 
-    def initialize_options(self):
-        super(CMakeBuild, self).initialize_options()
-        self.package = PACKAGE
+
+class CMakeExtensionBuilder(object):
+    """
+    Base extension builder mixin that can be used to build extensions out of
+    setup.py (for example in tests/conftests.py)
+    """
+
+    extensions = [
+        CMakeExtension(d.split(os.sep)[-2], d)
+        for d in glob(os.path.join(PACKAGE, "*", ""))
+        if os.path.isfile(os.path.join(d, 'CMakeLists.txt'))
+    ]
+    package = PACKAGE
 
     def run(self):
         try:
@@ -73,14 +83,19 @@ class CMakeBuild(build_ext):
         )
         cfg = 'Debug' if self.debug else 'Release'
 
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DCMAKE_BUILD_TYPE=' + cfg]
+        cmake_args = ['-DCMAKE_%s_OUTPUT_DIRECTORY=%s' % (t, extdir)
+                      for t in BUILD_TYPES] + ['-DCMAKE_BUILD_TYPE=' + cfg]
 
         build_args = ['--config', cfg]
 
+        try:
+            build_args += ['--target', self.target(ext.name)]
+        except AttributeError:
+            pass
+
         if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_%s=%s'
-                           % (cfg.upper(), extdir)]
+            cmake_args += ['-DCMAKE_%s_OUTPUT_DIRECTORY_%s=%s' %
+                           (t, cfg.upper(), extdir) for t in BUILD_TYPES]
             if sys.maxsize > 2**32:
                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
@@ -89,40 +104,58 @@ class CMakeBuild(build_ext):
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '%s -DVERSION_INFO=\\"%s\\"' % (
-            env.get('CXXFLAGS', ''), self.distribution.get_version()
+            env.get('CXXFLAGS', ''), get_version()
         )
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args,
-                              cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args,
-                              cwd=self.build_temp)
+        build_temp = os.path.join(self.build_temp, ext.name)
+        if not os.path.exists(build_temp):
+            os.makedirs(build_temp)
 
-setup(
-    name=PACKAGE,
-    version=__version__,
-    description='Boilerplate Python package with C/C++ modules',
-    long_description=open(os.path.join('README.rst')).read(),
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    url=URL,
-    keywords=[],
-    classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
-        'Development Status :: %s' % DEV_STATUS[dev_status],
-        'Environment :: Console'
-    ],
-    ext_modules=[CMakeExtension(d.split(os.sep)[-2], d)
-                 for d in glob(os.path.join(PACKAGE, "*", ""))
-                 if os.path.isfile(os.path.join(d, 'CMakeLists.txt'))],
-    cmdclass=dict(build_ext=CMakeBuild),
-    packages=find_packages(),
-    install_requires=(),
-    entry_points={
-        'console_scripts': [
-            '%s = %s.main:run' % ((PACKAGE,)*2)
+        try:
+            kwargs = self.get_subprocess_kwargs()
+        except AttributeError:
+            kwargs = {}
+
+        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args,
+                              cwd=build_temp, env=env, **kwargs)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args,
+                              cwd=build_temp, **kwargs)
+
+
+class CMakeBuild(CMakeExtensionBuilder, build_ext):
+
+    def initialize_options(self):
+        super(CMakeBuild, self).initialize_options()
+        self.package = CMakeExtensionBuilder.package
+
+
+if __name__ == '__main__':
+    # we're importing setup.py from tests.conftest, and we don't want setup()
+    # to execute
+    setup(
+        name=PACKAGE,
+        version=__version__,
+        description='Boilerplate Python package with C/C++ modules',
+        long_description=open(os.path.join('README.rst')).read(),
+        author=AUTHOR,
+        author_email=AUTHOR_EMAIL,
+        url=URL,
+        keywords=[],
+        classifiers=[
+            'Programming Language :: Python :: 3',
+            'License :: OSI Approved :: MIT License',
+            'Development Status :: %s' % DEV_STATUS[dev_status],
+            'Environment :: Console'
         ],
-    },
-    zip_safe=False
-)
+        ext_modules=CMakeExtensionBuilder.extensions,
+        cmdclass={
+            'build_ext': CMakeBuild
+        },
+        packages=find_packages(),
+        install_requires=(),
+        entry_points={
+            'console_scripts': [
+                '%s = %s.main:run' % ((PACKAGE,)*2)
+            ],
+        },
+        zip_safe=False
+    )

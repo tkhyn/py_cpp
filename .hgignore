@@ -12,6 +12,7 @@ cmake-build-*
 *.pyd
 
 # python tests
+tests/.cpp
 tests/.cache
 tests/.coverage
 
