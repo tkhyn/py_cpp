@@ -6,12 +6,12 @@ Template project for a Python 3 application with C/C++ modules.
 
 Features:
 
- - dependency management using buildout_ for Python and conan_ for C/C++ modules
- - automated C/C++ builds using CMake_
- - testing frameworks for Python and C/C++, all the tests are built and run
-   from one command
- - automated inlline documentation generation using sphinx-apidoc_ for the
-   Python code and doxygen_ for the C/C++ code
+- dependency management using buildout_ for Python and conan_ for C/C++ modules
+- automated C/C++ builds using CMake_
+- testing frameworks for Python and C/C++, all the tests are built and run
+  from one command
+- automated inlline documentation generation using sphinx-apidoc_ for the
+  Python code and doxygen_ for the C/C++ code
 
 
 Requirements
