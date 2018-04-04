@@ -42,9 +42,6 @@ class CMakeExtension(Extension):
         self.sourcedir = os.path.abspath(sourcedir)
 
 
-BUILD_TYPES = ('LIBRARY', 'RUNTIME')
-
-
 class CMakeExtensionBuilder(object):
     """
     Base extension builder mixin that can be used to build extensions out of
@@ -83,8 +80,10 @@ class CMakeExtensionBuilder(object):
         )
         cfg = 'Debug' if self.debug else 'Release'
 
-        cmake_args = ['-DCMAKE_%s_OUTPUT_DIRECTORY=%s' % (t, extdir)
-                      for t in BUILD_TYPES] + ['-DCMAKE_BUILD_TYPE=' + cfg]
+        cmake_args = ['-DCMAKE_BUILD_TYPE=' + cfg] + [
+            '-DCMAKE_%s_OUTPUT_DIRECTORY=%s' % (t, extdir)
+            for t in ('LIBRARY', 'RUNTIME')
+        ]
 
         build_args = ['--config', cfg]
 
@@ -94,8 +93,6 @@ class CMakeExtensionBuilder(object):
             pass
 
         if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_%s_OUTPUT_DIRECTORY_%s=%s' %
-                           (t, cfg.upper(), extdir) for t in BUILD_TYPES]
             if sys.maxsize > 2**32:
                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
