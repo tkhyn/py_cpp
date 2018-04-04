@@ -1,2 +1,5 @@
 include LICENSE.rst README.rst
-recursive-exclude tests *
+recursive-include * *.cpp *.h CMakeLists.txt conanfile.txt
+recursive-exclude * tests.cpp CMakeCXXCompilerId.cpp
+prune */*/tests
+prune fab
