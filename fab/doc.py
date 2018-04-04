@@ -3,10 +3,11 @@ import sys
 import shutil
 import re
 from copy import copy
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
+from contextlib import contextmanager
 
 from fabric.tasks import Task
-from fabric.api import env
+from fabric.api import env, lcd
 
 from sphinx import build_main as build
 from sphinx.ext.apidoc import main as build_apidoc
@@ -16,8 +17,8 @@ from breathe.apidoc import main as breathe_apidoc
 from doc.conf import breathe_projects
 
 
-SOURCE_DIR = 'py_cpp'
-
+ROOT_PKG = 'py_cpp'
+DOC_DIR = 'doc'
 APIDOC_DIR = 'apidoc'
 
 PY_EXCLUDE = ['version.py']
@@ -26,123 +27,168 @@ PY_DIR = 'py'
 CPP_DIR = 'cpp'
 
 
+@contextmanager
+def cd(path):
+    old_dir = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(old_dir)
+
+
+@contextmanager
+def sysargs(args):
+    sys_argv = copy(sys.argv)
+    sys.argv[1:] = args
+    try:
+        yield
+    finally:
+        sys.argv = sys_argv
+
+
 class SphinxBuilder(Task):
 
-    def run(self, apidoc=False, *args, **kwargs):
-
+    def setup_dirs(self):
         root_dir = os.path.dirname(env.real_fabfile)
-        src_dir = os.path.join(root_dir, SOURCE_DIR)
-        doc_dir = os.path.join(root_dir, 'doc')
-        html_output = os.path.join(doc_dir, 'build', 'html')
+        self.src_dir = os.path.join(root_dir, ROOT_PKG)
+        self.doc_dir = os.path.join(root_dir, DOC_DIR)
+        self.apidoc_dir = os.path.join(self.doc_dir, APIDOC_DIR)
+        self.html_output = os.path.join(self.doc_dir, 'build', 'html')
 
-        apidoc_output = os.path.join(doc_dir, APIDOC_DIR, PY_DIR)
+    def generate_py_apidoc(self):
+        """
+        Generates API documentation from code for all python modules and
+        packages
+        """
 
-        # generate auto documentation
-        if apidoc:
+        apidoc_output = os.path.join(self.apidoc_dir, PY_DIR)
 
-            # cleanup
-            try:
-                shutil.rmtree(apidoc_output)
-            except OSError:
-                # dir already removed
-                pass
-            os.makedirs(apidoc_output)
+        # cleanup
+        try:
+            shutil.rmtree(apidoc_output)
+        except OSError:
+            # dir already removed
+            pass
+        os.makedirs(apidoc_output)
 
-            build_apidoc([
-                '--implicit-namespaces', '--separate', '--force',
-                '-o', apidoc_output, src_dir] + [
-                os.path.join(src_dir, os.path.normpath(p)) for p in PY_EXCLUDE
-            ])
+        with cd(apidoc_output):
+            self._generate_py_apidoc(apidoc_output)
 
-            os.chdir(apidoc_output)
+    def _generate_py_apidoc(self, output_dir):
+        # In this function we are in the apidoc output directory
 
-            root_pkg_name = os.path.basename(src_dir)
+        root_pkg_name = os.path.basename(self.src_dir)
 
-            os.remove('modules.rst')
-            os.rename(root_pkg_name + '.rst', 'modules.rst')
+        # python modules apidoc
+        build_apidoc([
+            '--implicit-namespaces', '--separate', '--force',
+            '-o', output_dir, self.src_dir] + [
+            os.path.join(self.src_dir, os.path.normpath(p))
+            for p in PY_EXCLUDE
+        ])
 
-            for f in os.listdir(apidoc_output):
+        os.remove('modules.rst')
+        os.rename(root_pkg_name + '.rst', 'modules.rst')
 
-                # 1. calculate new file path
-                f_spl = f.split('.')
+        for f in os.listdir(output_dir):
 
-                d = f_spl[1:-2]
+            f_path = os.path.join(output_dir, f)
 
-                # 2. search and replace root package name in file + change paths
-                fh = open(f, 'r')
-                content = fh.readlines()
-                fh.close()
+            # 1. calculate new file path
+            f_spl = f.split('.')
 
-                for i in range(len(content)):
-                    line = re.sub('\\\\(?P<char>[_-])', '\g<char>', content[i])
+            d = f_spl[1:-2]
 
-                    if '.. toctree::' in line:
-                        # replace reference by relative path
-                        i += 2
+            # 2. search and replace root package name in file + change paths
+            fh = open(f_path, 'r')
+            content = fh.readlines()
+            fh.close()
+
+            for i in range(len(content)):
+                line = re.sub('\\\\(?P<char>[_-])', '\g<char>', content[i])
+
+                if '.. toctree::' in line:
+                    # replace reference by relative path
+                    i += 2
+                    line = content[i]
+                    while line != '\n':
+                        path = line.replace(root_pkg_name + '.', '') \
+                            .strip().split('.')
+                        new_path = []
+                        for j in range(len(path)):
+                            if j < len(d) and d[j] == path[j]:
+                                continue
+                            new_path.append(path[j])
+                        content[i] = '    %s\n' % '/'.join(new_path)
+                        i += 1
                         line = content[i]
-                        while line != '\n':
-                            path = line.replace(root_pkg_name + '.', '') \
-                                       .strip().split('.')
-                            new_path = []
-                            for j in range(len(path)):
-                                if j < len(d) and d[j] == path[j]:
-                                    continue
-                                new_path.append(path[j])
-                            content[i] = '    %s\n' % '/'.join(new_path)
-                            i += 1
-                            line = content[i]
-                        continue
-
-                    if (root_pkg_name + '.') in line \
-                    and ('.. automodule:: ' + root_pkg_name) not in line:
-                        content[i] = re.sub(
-                            root_pkg_name + r'\.', '', line
-                        )
-                        next_line = content[i + 1]
-                        if ''.join(set(next_line[:-1])) in ('=', '-'):
-                            content[i + 1] = next_line[-len(content[i]):]
-
-                    if f == 'modules.rst':
-                        if content[i] in ['Submodules', 'Subpackages']:
-                            content[i+1] = content[i+1].replace('-', '=')
-
-                if f == 'modules.rst':
-                    # replace title and strip module contents for root package
-                    content[0] = 'Python\n'
-                    content[1] = content[1][0]*(len(content[0]) - 1) + '\n'
-                    content = content[:-8]
-
-                fh = open(f, 'w')
-                fh.write(''.join(content))
-                fh.close()
-
-                if len(f_spl) == 2:
-                    # do not move/rename modules.rst
                     continue
 
-                # 3. move the file to its correct directory
-                if len(d):
-                    d = os.path.join(*d)
-                    try:
-                        os.makedirs(d)
-                    except OSError:
-                        # directory exists
-                        pass
-                else:
-                    d = '.'
+                if (root_pkg_name + '.') in line \
+                        and ('.. automodule:: ' + root_pkg_name) not in line:
+                    content[i] = re.sub(
+                        root_pkg_name + r'\.', '', line
+                    )
+                    next_line = content[i + 1]
+                    if ''.join(set(next_line[:-1])) in ('=', '-'):
+                        content[i + 1] = next_line[-len(content[i]):]
 
-                dest = os.path.join(d, '.'.join(f_spl[-2:]))
+            if f == 'modules.rst':
+                # replace title and strip module contents for root package
+                content[0] = 'Python\n'
+                content[1] = content[1][0] * (len(content[0]) - 1) + '\n'
+                content = content[:-8]
+
+            fh = open(f_path, 'w')
+            fh.write(''.join(content))
+            fh.close()
+
+            if len(f_spl) == 2:
+                # do not move/rename modules.rst
+                continue
+
+            # 3. move the file to its correct directory
+            if len(d):
+                d = os.path.join(*d)
                 try:
-                    os.remove(dest)
+                    os.makedirs(d)
                 except OSError:
-                    # file does not exist already
+                    # directory exists
                     pass
-                os.rename(f, dest)
+            else:
+                d = '.'
 
-        os.chdir(doc_dir)
+            dest = os.path.join(d, '.'.join(f_spl[-2:]))
+            try:
+                os.remove(dest)
+            except OSError:
+                # file does not exist already
+                pass
+            os.rename(f, dest)
 
+    def generate_cpp_apidoc(self):
+        """
+        Generates API documentation from code for all C/C++ modules, via
+        doxygen and breathe
+        """
+
+        apidoc_output = os.path.join(self.apidoc_dir, CPP_DIR)
+
+        # cleanup
+        try:
+            for name, path in breathe_projects.items():
+                shutil.rmtree(path)
+                shutil.rmtree(os.path.join(apidoc_output, name))
+        except OSError:
+            # dir already removed
+            pass
+
+        with cd(self.doc_dir):
+            self._generate_cpp_apidoc(apidoc_output)
+
+    def _generate_cpp_apidoc(self, output_dir):
         # run doxygen and breathe-apidoc
-        sys_argv = copy(sys.argv)
 
         # read Doxyfile
         doxyfile = ''
@@ -153,19 +199,14 @@ class SphinxBuilder(Task):
         for name, path in breathe_projects.items():
             _generate_doxygen(doxyfile % {
                 'project_name': name,
-                'input_dir': os.path.join(src_dir, name),
+                'input_dir': os.path.join(self.src_dir, name),
                 'output_dir': os.path.split(path)[0],
                 'xml_output': os.path.split(path)[1],
-                'strip_from_path': os.path.join(src_dir, name)
+                'strip_from_path': os.path.join(self.src_dir, name)
             })
-            breathe_output = os.path.join(APIDOC_DIR, CPP_DIR, name)
-            sys.argv[1:] = [
-                '-o', breathe_output,
-                '-f',
-                '-p', name,
-                path
-            ]
-            breathe_apidoc()
+            breathe_output = os.path.join(output_dir, name)
+            with sysargs(['-o', breathe_output, '-f', '-p', name, path]):
+                breathe_apidoc()
 
             file_list = os.path.join(breathe_output, 'filelist.rst')
             fh = open(file_list, 'r')
@@ -173,25 +214,32 @@ class SphinxBuilder(Task):
             fh.close()
 
             content[0] = name + '\n'
-            content[1] = content[1][0]*len(name) + '\n'
+            content[1] = content[1][0] * len(name) + '\n'
 
             fh = open(file_list, 'w')
             fh.write(''.join(content))
             fh.close()
 
-        sys.argv = sys_argv
+    def run(self, apidoc=False, *args, **kwargs):
+
+        self.setup_dirs()
+
+        # generate auto documentation
+        if apidoc:
+            self.generate_py_apidoc()
+            self.generate_cpp_apidoc()
 
         # build html documentation
-        build(['build', doc_dir, html_output])
+        build(['build', self.doc_dir, self.html_output])
 
 
 doc = SphinxBuilder()
 
 
 def _generate_doxygen(doxygen_input):
-    '''
+    """
     Borrowed from exhale
-    '''
+    """
 
     if not isinstance(doxygen_input, str):
         return "Error: the `doxygen_input` variable must be of type `str`."
