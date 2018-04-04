@@ -134,7 +134,7 @@ if __name__ == '__main__':
     setup(
         name=PACKAGE,
         version=__version__,
-        description='Boilerplate Python package with C/C++ modules',
+        description='Template Python project with C/C++ modules',
         long_description=open(os.path.join('README.rst')).read(),
         author=AUTHOR,
         author_email=AUTHOR_EMAIL,
