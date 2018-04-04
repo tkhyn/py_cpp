@@ -18,4 +18,4 @@ tests/.coverage
 # documentation
 doc/_build
 doc/apidoc/*/
-doc/_doxygen
+*/doc/_doxml

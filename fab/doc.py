@@ -1,12 +1,20 @@
 import os
+import sys
 import shutil
 import re
+from copy import copy
+from subprocess import Popen, PIPE, STDOUT
 
 from fabric.tasks import Task
 from fabric.api import env
 
 from sphinx import build_main as build
 from sphinx.ext.apidoc import main as build_apidoc
+
+from breathe.apidoc import main as breathe_apidoc
+
+from doc.conf import breathe_projects
+
 
 SOURCE_DIR = 'py_cpp'
 
@@ -133,8 +141,95 @@ class SphinxBuilder(Task):
 
         os.chdir(doc_dir)
 
+        # run doxygen and breathe-apidoc
+        sys_argv = copy(sys.argv)
+
+        # read Doxyfile
+        doxyfile = ''
+        for l in open('Doxyfile', 'r').readlines():
+            if l.strip() and not l.startswith('#'):
+                doxyfile += l
+
+        for name, path in breathe_projects.items():
+            _generate_doxygen(doxyfile % {
+                'project_name': name,
+                'input_dir': os.path.join(src_dir, name),
+                'output_dir': os.path.split(path)[0],
+                'xml_output': os.path.split(path)[1],
+                'strip_from_path': os.path.join(src_dir, name)
+            })
+            breathe_output = os.path.join(APIDOC_DIR, CPP_DIR, name)
+            sys.argv[1:] = [
+                '-o', breathe_output,
+                '-f',
+                '-p', name,
+                path
+            ]
+            breathe_apidoc()
+
+            file_list = os.path.join(breathe_output, 'filelist.rst')
+            fh = open(file_list, 'r')
+            content = fh.readlines()
+            fh.close()
+
+            content[0] = name + '\n'
+            content[1] = content[1][0]*len(name) + '\n'
+
+            fh = open(file_list, 'w')
+            fh.write(''.join(content))
+            fh.close()
+
+        sys.argv = sys_argv
+
         # build html documentation
         build(['build', doc_dir, html_output])
 
 
 doc = SphinxBuilder()
+
+
+def _generate_doxygen(doxygen_input):
+    '''
+    Borrowed from exhale
+    '''
+
+    if not isinstance(doxygen_input, str):
+        return "Error: the `doxygen_input` variable must be of type `str`."
+
+    doxyfile = doxygen_input == "Doxyfile"
+    try:
+        # Setup the arguments to launch doxygen
+        if doxyfile:
+            args = ["doxygen"]
+            kwargs = {}
+        else:
+            args = ["doxygen", "-"]
+            kwargs = {"stdin": PIPE}
+
+        # Note: overload of args / kwargs, Popen is expecting a list as the
+        # first parameter (aka no *args, just args)!
+        doxygen_proc = Popen(args, **kwargs)
+
+        # Communicate can only be called once, arrange whether or not stdin has
+        # value
+        if not doxyfile:
+            # In Py3, make sure we are communicating a bytes-like object which
+            # is no longer interchangeable with strings (as was the case in Py2)
+            if sys.version[0] == "3":
+                doxygen_input = bytes(doxygen_input, "utf-8")
+            comm_kwargs = {"input": doxygen_input}
+        else:
+            comm_kwargs = {}
+
+        # Waits until doxygen has completed
+        doxygen_proc.communicate(**comm_kwargs)
+
+        # Make sure we had a valid execution of doxygen
+        exit_code = doxygen_proc.returncode
+        if exit_code != 0:
+            raise RuntimeError("Non-zero return code of [{0}] from 'doxygen'...".format(exit_code))
+    except Exception as e:
+        return "Unable to execute 'doxygen': {0}".format(e)
+
+    # returning None signals _success_
+    return None

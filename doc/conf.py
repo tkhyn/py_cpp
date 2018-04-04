@@ -6,16 +6,28 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/stable/config
 
+# -- Imports ----------------------------------------------------------------
+
+import os
+import sys
+from glob import glob
+
+
+# -- Configuration variables ------------------------------------------------
+
 package_name = 'py_cpp'
 
-# -- Path setup --------------------------------------------------------------
+# the subdirectory where the doxygen XML documentation should be generated
+# in C/C++ modules
+doxml_dir = os.path.join('doc', '_doxml')
+
+
+# -- Paths setup -------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 docs_path = os.path.dirname(__file__)
@@ -52,6 +64,7 @@ release = version
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'breathe'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -169,3 +182,11 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+# Breathe
+
+breathe_projects = {}
+for d in glob(os.path.join(src_path, "*", "")):
+    # if there is a CMakeLists.txt file, we have a C/C++ module
+    if os.path.isfile(os.path.join(d, 'CMakeLists.txt')):
+        breathe_projects[d.split(os.sep)[-2]] = os.path.join(d, doxml_dir)
