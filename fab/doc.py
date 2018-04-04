@@ -8,11 +8,14 @@ from fabric.api import env
 from sphinx import build_main as build
 from sphinx.ext.apidoc import main as build_apidoc
 
-APIDOC_DIR = 'apidoc'
 SOURCE_DIR = 'py_cpp'
 
-PY_APIDOC_DIR = 'py'
-CPP_APIDOC_DIR = 'cpp'
+APIDOC_DIR = 'apidoc'
+
+PY_EXCLUDE = ['version.py']
+PY_DIR = 'py'
+
+CPP_DIR = 'cpp'
 
 
 class SphinxBuilder(Task):
@@ -24,7 +27,7 @@ class SphinxBuilder(Task):
         doc_dir = os.path.join(root_dir, 'doc')
         html_output = os.path.join(doc_dir, 'build', 'html')
 
-        apidoc_output = os.path.join(doc_dir, APIDOC_DIR, PY_APIDOC_DIR)
+        apidoc_output = os.path.join(doc_dir, APIDOC_DIR, PY_DIR)
 
         # generate auto documentation
         if apidoc:
@@ -38,7 +41,9 @@ class SphinxBuilder(Task):
             os.makedirs(apidoc_output)
 
             build_apidoc(
-                ['--implicit-namespaces', '-o', apidoc_output, src_dir]
+                ['--implicit-namespaces', '-o', apidoc_output, src_dir] +
+                [os.path.join(src_dir, os.path.normpath(p))
+                 for p in PY_EXCLUDE]
             )
 
             os.chdir(apidoc_output)
