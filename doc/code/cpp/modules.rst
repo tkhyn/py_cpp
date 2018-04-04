@@ -1,5 +1,5 @@
-C/C++ modules
-=============
+C/C++
+=====
 
 .. toctree::
    :maxdepth: 1

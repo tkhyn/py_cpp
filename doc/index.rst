@@ -10,7 +10,7 @@ Welcome to py_cpp's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   apidoc/modules.rst
+   code/modules.rst
 
 
 Indices and tables

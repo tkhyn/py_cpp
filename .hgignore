@@ -17,5 +17,5 @@ tests/.coverage
 
 # documentation
 doc/_build
-doc/apidoc/*/
+doc/code/*/
 */doc/_doxml

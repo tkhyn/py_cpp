@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 from contextlib import contextmanager
 
 from fabric.tasks import Task
-from fabric.api import env, lcd
+from fabric.api import env
 
 from sphinx import build_main as build
 from sphinx.ext.apidoc import main as build_apidoc
@@ -19,7 +19,7 @@ from doc.conf import breathe_projects
 
 ROOT_PKG = 'py_cpp'
 DOC_DIR = 'doc'
-APIDOC_DIR = 'apidoc'
+APIDOC_DIR = 'code'
 
 PY_EXCLUDE = ['version.py']
 PY_DIR = 'py'
@@ -76,7 +76,7 @@ class SphinxBuilder(Task):
             self._generate_py_apidoc(apidoc_output)
 
     def _generate_py_apidoc(self, output_dir):
-        # In this function we are in the apidoc output directory
+        # In this function we are in the code documentation output directory
 
         root_pkg_name = os.path.basename(self.src_dir)
 
@@ -220,12 +220,12 @@ class SphinxBuilder(Task):
             fh.write(''.join(content))
             fh.close()
 
-    def run(self, apidoc=False, *args, **kwargs):
+    def run(self, code=False, *args, **kwargs):
 
         self.setup_dirs()
 
         # generate auto documentation
-        if apidoc:
+        if code:
             self.generate_py_apidoc()
             self.generate_cpp_apidoc()
 
