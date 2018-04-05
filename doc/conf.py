@@ -64,6 +64,7 @@ release = version
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'doc.ext.apidoc',
     'breathe'
 ]
 

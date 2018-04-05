@@ -10,7 +10,7 @@ Features:
 - automated C/C++ builds using CMake_
 - testing frameworks for Python and C/C++, all the tests are built and run
   from one command
-- automated inlline documentation generation using sphinx-apidoc_ for the
+- automated inline documentation generation using sphinx-apidoc_ for the
   Python code and doxygen_ for the C/C++ code
 
 
@@ -53,9 +53,8 @@ This in turn downloads and installs conan_ and all its dependencies locally and
 creates some scripts in the ``bin`` directory:
 
 - ``bin/conan`` is the C/C++ dependencies manager and will be invoked by CMake_
-- ``bin/fab`` launches fabric_ scripts (used here for automatic documentation
-  generation)
 - ``bin/tests`` will launch the test suite
+- ``bin/sphinx-builder`` launches the documentation generation
 - ``bin/python`` will be used to launch a useful Python_ interpreter where all
   your Python dependencies and C/C++ modules will be available
 
@@ -68,7 +67,6 @@ Here is an overview of the project structure::
    py_cpp/                  # project directory
       bin/                  # buildout scripts
       doc/                  # sphinx documentation
-      fab/                  # fabric scripts
 
       py_cpp/               # main package directory
          .cmake/            # CMake main scripts for all packages
@@ -138,12 +136,12 @@ sphinx_ main documentation.
 
 To generate the documentation for the whole project, simply use::
 
-   bin/fab docs:code=True
+   bin/sphinx-build --apidoc
 
 If you do not need to regenerate the documentation from the docstrings, you can
 remove ``code=True``::
 
-   bin/fab docs
+   bin/sphinx-build
 
 To add custom documentation, simply add some *.rst files in the ``doc`` folder
 and follow the sphinx_ documentation for more information on directives and
@@ -154,7 +152,6 @@ syntax.
 .. _buildout: http://www.buildout.org/en/stable/
 .. _conan: https://www.conan.io/
 .. _CMake: https://cmake.org
-.. _fabric: http://www.fabfile.org
 .. _sphinx: http://www.sphinx-doc.org
 .. _sphinx-apidoc: http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html
 .. _doxygen: http://www.doxygen.org/

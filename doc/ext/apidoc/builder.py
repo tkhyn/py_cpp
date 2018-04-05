@@ -1,24 +1,17 @@
 import os
-import sys
 import shutil
 import re
-from copy import copy
-from subprocess import Popen, PIPE
-from contextlib import contextmanager
 
-from fabric.tasks import Task
-from fabric.api import env
-
-from sphinx import build_main as build
-from sphinx.ext.apidoc import main as build_apidoc
+from sphinx.ext.apidoc import main as sphinx_apidoc
 
 from breathe.apidoc import main as breathe_apidoc
 
 from doc.conf import breathe_projects
 
+from .helpers import cd, sysargs, generate_doxygen
+
 
 ROOT_PKG = 'py_cpp'
-DOC_DIR = 'doc'
 APIDOC_DIR = 'code'
 
 PY_EXCLUDE = ['version.py']
@@ -27,32 +20,12 @@ PY_DIR = 'py'
 CPP_DIR = 'cpp'
 
 
-@contextmanager
-def cd(path):
-    old_dir = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old_dir)
+class ApidocBuilder(object):
 
-
-@contextmanager
-def sysargs(args):
-    sys_argv = copy(sys.argv)
-    sys.argv[1:] = args
-    try:
-        yield
-    finally:
-        sys.argv = sys_argv
-
-
-class SphinxBuilder(Task):
-
-    def setup_dirs(self):
-        root_dir = os.path.dirname(env.real_fabfile)
+    def __init__(self, app):
+        self.doc_dir = app.srcdir
+        root_dir = os.path.dirname(self.doc_dir)
         self.src_dir = os.path.join(root_dir, ROOT_PKG)
-        self.doc_dir = os.path.join(root_dir, DOC_DIR)
         self.apidoc_dir = os.path.join(self.doc_dir, APIDOC_DIR)
         self.html_output = os.path.join(self.doc_dir, 'build', 'html')
 
@@ -81,7 +54,7 @@ class SphinxBuilder(Task):
         root_pkg_name = os.path.basename(self.src_dir)
 
         # python modules apidoc
-        build_apidoc([
+        sphinx_apidoc([
             '--implicit-namespaces', '--separate', '--force',
             '-o', output_dir, self.src_dir] + [
             os.path.join(self.src_dir, os.path.normpath(p))
@@ -197,7 +170,7 @@ class SphinxBuilder(Task):
                 doxyfile += l
 
         for name, path in breathe_projects.items():
-            _generate_doxygen(doxyfile % {
+            generate_doxygen(doxyfile % {
                 'project_name': name,
                 'input_dir': os.path.join(self.src_dir, name),
                 'output_dir': os.path.split(path)[0],
@@ -220,64 +193,12 @@ class SphinxBuilder(Task):
             fh.write(''.join(content))
             fh.close()
 
-    def run(self, code=False, *args, **kwargs):
-
-        self.setup_dirs()
-
+    def run(self, *args, **kwargs):
         # generate auto documentation
-        if code:
-            self.generate_py_apidoc()
-            self.generate_cpp_apidoc()
-
-        # build html documentation
-        build(['build', self.doc_dir, self.html_output])
+        self.generate_py_apidoc()
+        self.generate_cpp_apidoc()
 
 
-doc = SphinxBuilder()
-
-
-def _generate_doxygen(doxygen_input):
-    """
-    Borrowed from exhale
-    """
-
-    if not isinstance(doxygen_input, str):
-        return "Error: the `doxygen_input` variable must be of type `str`."
-
-    doxyfile = doxygen_input == "Doxyfile"
-    try:
-        # Setup the arguments to launch doxygen
-        if doxyfile:
-            args = ["doxygen"]
-            kwargs = {}
-        else:
-            args = ["doxygen", "-"]
-            kwargs = {"stdin": PIPE}
-
-        # Note: overload of args / kwargs, Popen is expecting a list as the
-        # first parameter (aka no *args, just args)!
-        doxygen_proc = Popen(args, **kwargs)
-
-        # Communicate can only be called once, arrange whether or not stdin has
-        # value
-        if not doxyfile:
-            # In Py3, make sure we are communicating a bytes-like object which
-            # is no longer interchangeable with strings (as was the case in Py2)
-            if sys.version[0] == "3":
-                doxygen_input = bytes(doxygen_input, "utf-8")
-            comm_kwargs = {"input": doxygen_input}
-        else:
-            comm_kwargs = {}
-
-        # Waits until doxygen has completed
-        doxygen_proc.communicate(**comm_kwargs)
-
-        # Make sure we had a valid execution of doxygen
-        exit_code = doxygen_proc.returncode
-        if exit_code != 0:
-            raise RuntimeError("Non-zero return code of [{0}] from 'doxygen'...".format(exit_code))
-    except Exception as e:
-        return "Unable to execute 'doxygen': {0}".format(e)
-
-    # returning None signals _success_
-    return None
+def build_apidoc(app):
+    builder = ApidocBuilder(app)
+    builder.run()

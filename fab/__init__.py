@@ -1,1 +1,0 @@
-from .doc import doc
