@@ -7,18 +7,14 @@
 #include "main.h"
 
 /*!
- * @brief Add two integers
- * @param a An integer
- * @param b Another integer
+ * @details Adds a and b using the + operator
  */
 int add(int a, int b) {
     return a + b;
 }
 
 /*!
- * @brief Subtract one integer from another
- * @param a An integer
- * @param b An integer to subtract from \p a
+ * @details Subtract b from a using the - operator
  */
 int sub(int a, int b) {
     return a - b;

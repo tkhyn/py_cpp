@@ -6,10 +6,18 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-/// Add two integers
+/*!
+ * @brief Add two integers
+ * @param a An integer
+ * @param b Another integer
+ */
 int add(int a, int b);
 
-/// Subtract one integer from another
+/*!
+ * @brief Subtract one integer from another
+ * @param a An integer
+ * @param b An integer to subtract from \p a
+ */
 int sub(int a, int b);
 
 #endif
