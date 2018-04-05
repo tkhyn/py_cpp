@@ -12,6 +12,8 @@ import os
 import sys
 from glob import glob
 
+from py_cpp import __version__
+
 
 # -- Configuration variables ------------------------------------------------
 
@@ -43,8 +45,6 @@ sys.path.insert(0, os.path.join(src_path))
 project = package_name
 copyright = '2018, Thomas Khyn'
 author = 'Thomas Khyn'
-
-from py_cpp import __version__
 
 # The short X.Y version.
 version = __version__[:3]
