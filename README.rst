@@ -55,6 +55,7 @@ creates some scripts in the ``bin`` directory:
 - ``bin/conan`` is the C/C++ dependencies manager and will be invoked by CMake_
 - ``bin/tests`` will launch the test suite
 - ``bin/sphinx-builder`` launches the documentation generation
+- ``bin/run`` will simply ... run the application
 - ``bin/python`` will be used to launch a useful Python_ interpreter where all
   your Python dependencies and C/C++ modules will be available
 
