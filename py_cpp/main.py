@@ -2,9 +2,19 @@
 Main module
 """
 
-from . import maths
+import wx
+
+from .ui.frame import MainFrame
 
 
 def run():
-    print('2 + 2 = %d' % maths.add(2, 2))
-    print('8 - 6 = %d' % maths.sub(8, 6))
+    """
+    Create wxPython app and mainframe
+    """
+
+    app = wx.App()
+
+    frame = MainFrame(None)
+    frame.Show()
+
+    app.MainLoop()

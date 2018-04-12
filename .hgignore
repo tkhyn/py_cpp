@@ -1,5 +1,8 @@
 syntax: glob
 
+# wxFormBuilder generated module
+ui/*_ui.py
+
 # buildout files and folders
 bin
 .installed.cfg
