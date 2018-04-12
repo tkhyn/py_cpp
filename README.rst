@@ -106,6 +106,14 @@ module is named ``maths``, you may import it in a Python module with::
     from py_cpp import maths
 
 
+Graphical User Interface
+------------------------
+
+Adding a GUI is relatively simple. If you check out the ``wx`` branch of this
+repository, you will find out how the minimal console application can be turned
+into a GUI with the help of wxPython_ and wxFormBuilder_.
+
+
 Testing
 -------
 
@@ -156,3 +164,5 @@ syntax.
 .. _sphinx-apidoc: http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html
 .. _doxygen: http://www.doxygen.org/
 .. _breathe: http://breathe.readthedocs.io/en/stable/
+.. _wxPython: https://www.wxpython.org/
+.. _wxFormBuilder: http://wxformbuilder.org
