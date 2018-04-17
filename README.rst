@@ -42,7 +42,8 @@ bootstrapping buildout_::
 .. warning::
 
    Make sure ``python`` is associated to a recent Python 3 interpreter on your
-   machine!
+   machine! You may want to activate a clean virtual environment first so that
+   your development environment is not 'polluted' by unnecessary packages.
 
 This creates a ``bin`` directory with a ``buildout`` script, that we're going
 to invoke straight away::
@@ -55,7 +56,6 @@ creates some scripts in the ``bin`` directory:
 - ``bin/conan`` is the C/C++ dependencies manager and will be invoked by CMake_
 - ``bin/tests`` will launch the test suite
 - ``bin/sphinx-builder`` launches the documentation generation
-- ``bin/run`` will simply ... run the application
 - ``bin/python`` will be used to launch a useful Python_ interpreter where all
   your Python dependencies and C/C++ modules will be available
 
