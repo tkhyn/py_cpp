@@ -74,6 +74,10 @@ class CMakeExtensionBuilder(object):
         for ext in self.extensions:
             self.build_extension(ext)
 
+    @staticmethod
+    def target(name):
+        return name
+
     def build_extension(self, ext):
         extdir = os.path.abspath(
             os.path.dirname(self.get_ext_fullpath(ext.name))
@@ -85,12 +89,7 @@ class CMakeExtensionBuilder(object):
             for t in ('LIBRARY', 'RUNTIME')
         ]
 
-        build_args = ['--config', cfg]
-
-        try:
-            build_args += ['--target', self.target(ext.name)]
-        except AttributeError:
-            pass
+        build_args = ['--config', cfg, '--target', self.target(ext.name)]
 
         if platform.system() == "Windows":
             if sys.maxsize > 2**32:

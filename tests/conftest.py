@@ -8,6 +8,7 @@ Adds a python test that runs each c++ module test executable
 import os
 from importlib.util import spec_from_file_location, module_from_spec
 from subprocess import DEVNULL, STDOUT
+from setuptools.dist import Distribution
 
 
 TEST_PATH = os.path.dirname(__file__)
@@ -50,5 +51,15 @@ def pytest_sessionstart(session):
     Build test executables from C/C++ packages
     """
 
-    ext_builder = CMakeTestExtensionBuilder()
-    ext_builder.run()
+    # build the test executables
+    CMakeTestExtensionBuilder().run()
+
+    # build the actual modules, so that they can be loaded by python
+    builder = setup.CMakeBuild(Distribution({
+        'ext_modules': setup.CMakeExtensionBuilder.extensions,
+    }))
+    # we call finalize_options and set inplace to 1 to set the output directory
+    # to the main package directory
+    builder.finalize_options()
+    builder.inplace = 1
+    builder.run()
