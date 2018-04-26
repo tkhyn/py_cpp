@@ -147,7 +147,7 @@ if __name__ == '__main__':
             'build_ext': CMakeBuild
         },
         packages=find_packages(),
-        install_requires=(),
+        install_requires=('wxPython',),
         entry_points={
             'console_scripts': [
                 '%s = %s.main:run' % ((PACKAGE,)*2)
